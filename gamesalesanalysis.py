@@ -177,22 +177,24 @@ Merged_dataframe
 The amount of games under the dataset, the games are relatively well balanced
 """
 
+import plotly.express as px
+
 sumByPlatform = Merged_dataframe.groupby(["Platform"], sort=True).count()
-top10 = sumByPlatform.sort_values("Rank",  ascending= False).head(10)
-top10.iloc[:,1].plot.pie(subplots= True)
-plt.ylabel("Platform")
-plt.title("Amount of games by platform")
+top10 = sumByPlatform.sort_values("Rank", ascending=False).head(10)
+top10['Platform'] = top10.index  # Add a 'Platform' column
+fig = px.pie(top10, values='Rank', names='Platform', title='Amount of games by platform')
+fig.show()
 
 """1. Top 10 most sold games"""
 
 maxbyPlatform = Merged_dataframe.groupby(["Name"], sort=False)['Global_Sales'].max()
-sortedMax = maxbyPlatform.sort_values(ascending = False)
+sortedMax = maxbyPlatform.sort_values(ascending=False)
 top10 = sortedMax.head(10)
-top10.plot.barh();
-plt.title("Top 10 games")
-plt.ylabel("Name")
-plt.xlabel("Sales in millions")
-plt.grid(linewidth = 0.4)
+top10 = top10.reset_index()  # Reset the index to have 'Name' as a column
+fig = px.bar(top10, x='Global_Sales', y='Name', orientation='h', title='Top 10 games')
+fig.update_xaxes(title='Sales in millions')
+fig.update_yaxes(title='Name')
+fig.show()
 
 """Most sold game is Wii Sports
 
@@ -200,13 +202,13 @@ plt.grid(linewidth = 0.4)
 """
 
 sumPlatforms = Merged_dataframe.groupby(["Platform"], sort=False)['Global_Sales'].sum()
-sortedSum = sumPlatforms.sort_values(ascending = False)
+sortedSum = sumPlatforms.sort_values(ascending=False)
 sorted7 = sortedSum.head(7)
-sorted7.plot.bar()
-plt.title("Platforms with most selling")
-plt.ylabel("Selling in millions")
-plt.xlabel("Platform")
-plt.grid(linewidth = 0.4)
+sorted7 = sorted7.reset_index()  # Reset the index to have 'Platform' as a column
+fig = px.bar(sorted7, x='Platform', y='Global_Sales', title='Platforms with most sales')
+fig.update_xaxes(title='Platform')
+fig.update_yaxes(title='Sales in millions')
+fig.show()
 
 """The best selling games are Playstation 2 games with even more than 1200 million in total sales.
 
@@ -214,13 +216,13 @@ plt.grid(linewidth = 0.4)
 """
 
 sumaGenre = Merged_dataframe.groupby(["Genre"], sort=False)['Global_Sales'].sum()
-sortedGenre = sumaGenre.sort_values(ascending = False)
+sortedGenre = sumaGenre.sort_values(ascending=False)
 sorted7 = sortedGenre.head(7)
-sorted7.plot.barh()
-plt.title("Sales in millions")
-plt.ylabel("Genres with most selling")
-plt.xlabel("Sales in millions")
-plt.grid(linewidth = 0.4)
+sorted7 = sorted7.reset_index()  # Reset the index to have 'Genre' as a column
+fig = px.bar(sorted7, y='Genre', x='Global_Sales', orientation='h', title='Genres with most sales')
+fig.update_xaxes(title='Sales in millions')
+fig.update_yaxes(title='Genres with most selling')
+fig.show()
 
 """Action games are by far the best sellers, followed by sports games and platformers
 
@@ -228,29 +230,26 @@ plt.grid(linewidth = 0.4)
 """
 
 sumPublisher = Merged_dataframe.groupby(["Publisher"], sort=False)['Global_Sales'].sum()
-sortedPublisher = sumPublisher.sort_values(ascending = False)
+sortedPublisher = sumPublisher.sort_values(ascending=False)
 sorted10 = sortedPublisher.head(10)
-sorted10.plot.barh()
-plt.title("Sales in millions")
-plt.ylabel("Total sales of all publishers")
-plt.xlabel("Publisher")
-plt.grid(linewidth = 0.4)
+sorted10 = sorted10.reset_index()  # Reset the index to have 'Publisher' as a column
+fig = px.bar(sorted10, y='Publisher', x='Global_Sales', orientation='h', title='Total sales of top 10 publishers')
+fig.update_xaxes(title='Sales in millions')
+fig.update_yaxes(title='Publisher')
+fig.show()
 
 """Nintendo leads convincingly.
 
 5. Comparison of sales in North America and Japan by year
 """
 
-salesNA = Merged_dataframe.groupby(["Year"], sort = True)['NA_Sales'].sum()
-salesJAP = Merged_dataframe.groupby(["Year"], sort = True)['JP_Sales'].sum()
+salesNA = Merged_dataframe.groupby(["Year"], sort=True)['NA_Sales'].sum()
+salesJAP = Merged_dataframe.groupby(["Year"], sort=True)['JP_Sales'].sum()
 
-fig, ax = plt.subplots()
-
-ax.plot(salesNA, color = 'green', label = "Sales in North America")
-ax.plot(salesJAP, color = 'red', label = "Sales in Japan")
-ax.legend(loc = 'upper left')
-plt.grid(linewidth = 0.4)
-plt.show()
+fig = px.line(x=salesNA.index, y=salesNA.values, labels={'x': 'Year', 'y': 'Sales'}, title='Sales in North America vs. Sales in Japan')
+fig.add_scatter(x=salesJAP.index, y=salesJAP.values, mode='lines', line=dict(color='red'), name='Sales in Japan')
+fig.add_scatter(x=salesNA.index, y=salesNA.values, mode='lines', line=dict(color='green'), name='Sales in North America')
+fig.show()
 
 """Visible decline after 2007, especially in North America, in Japan there is no visible decline, but there is no increase either.
 
@@ -262,16 +261,14 @@ GDP_byYearUSA = Merged_dataframe.groupby(["Year"], sort = True)['GDP_USA'].max()
 GDP_byYearCanada = Merged_dataframe.groupby(["Year"], sort = True)['GDP_Canada'].max()
 GDP_byYearMexico = Merged_dataframe.groupby(["Year"], sort = True)['GDP_Mexico'].max()
 
-fig, ax = plt.subplots()
-
-ax.plot(GDP_byYearJapan, color = 'green', label = "GDP Japan")
-ax.plot(GDP_byYearUSA, color = 'blue', label = "GDP USA")
-ax.plot(GDP_byYearCanada, color = 'red', label = "GDP Canada")
-ax.plot(GDP_byYearMexico, color = 'orange', label = "GDP Mexico")
-ax.legend(loc = 'upper left')
-plt.title("Comparison of GDP")
-plt.grid(linewidth = 0.4)
-plt.show()
+fig = px.line(title="Comparison of GDP")
+fig.add_scatter(x=GDP_byYearJapan.index, y=GDP_byYearJapan.values, mode='lines', name="GDP Japan", line=dict(color='green'))
+fig.add_scatter(x=GDP_byYearUSA.index, y=GDP_byYearUSA.values, mode='lines', name="GDP USA", line=dict(color='blue'))
+fig.add_scatter(x=GDP_byYearCanada.index, y=GDP_byYearCanada.values, mode='lines', name="GDP Canada", line=dict(color='red'))
+fig.add_scatter(x=GDP_byYearMexico.index, y=GDP_byYearMexico.values, mode='lines', name="GDP Mexico", line=dict(color='orange'))
+fig.update_xaxes(title="Year")
+fig.update_yaxes(title="GDP")
+fig.show()
 
 """Also a visible decline after ~ 2007. Assumption - World financial crisis after 2007
 
@@ -280,25 +277,32 @@ plt.show()
 
 salesEU = Merged_dataframe.groupby(["Year"], sort = True)['EU_Sales'].sum()
 
-salesEU.plot()
-plt.ylabel("Sales in millions")
-plt.xlabel("Year")
-plt.title("Sales in Europe")
-plt.grid(linewidth = 0.4)
+fig = px.line(x=salesEU.index, y=salesEU.values, title="Sales in Europe")
+fig.update_xaxes(title="Year")
+fig.update_yaxes(title="Sales in millions")
+fig.update_layout(
+    xaxis=dict(showgrid=True, gridwidth=0.4),
+    yaxis=dict(showgrid=True, gridwidth=0.4)
+)
+fig.show()
 
 """A slight decline is visible after 2009
 
 8. Comparison of Europe with North America and Japan
 """
 
-fig, ax = plt.subplots()
+import plotly.graph_objects as go
+fig = go.Figure()
 
-ax.plot(salesNA, color = 'green', label = "Sales in North America")
-ax.plot(salesJAP, color = 'red', label = "Sales in Japan")
-ax.plot(salesEU, color = 'blue', label = "Sales in Europe", linestyle = ":")
-ax.legend(loc = 'upper left')
-plt.grid(linewidth = 0.4)
-plt.show()
+fig.add_trace(go.Scatter(x=salesNA.index, y=salesNA.values, mode='lines', name="Sales in North America", line=dict(color='green')))
+fig.add_trace(go.Scatter(x=salesJAP.index, y=salesJAP.values, mode='lines', name="Sales in Japan", line=dict(color='red')))
+fig.add_trace(go.Scatter(x=salesEU.index, y=salesEU.values, mode='lines', name="Sales in Europe", line=dict(color='blue', dash='dot')))
+
+fig.update_xaxes(title="Year")
+fig.update_yaxes(title="Sales")
+fig.update_layout(legend=dict(x=0, y=1), xaxis=dict(showgrid=True, gridwidth=0.4), yaxis=dict(showgrid=True, gridwidth=0.4))
+fig.update_layout(title="Sales Comparison")
+fig.show()
 
 """By far the most games were sold in North America, almost twice as much in Europe and the least in Japan
 
@@ -307,14 +311,17 @@ plt.show()
 
 salesRest = Merged_dataframe.groupby(["Year"], sort = True)['Other_Sales'].sum()
 
-fig, ax = plt.subplots()
+fig = go.Figure()
 
-ax.plot(salesNA, color = 'green', label = "Sales in North America")
-ax.plot(salesJAP, color = 'red', label = "Prodaja u Japanu")
-ax.plot(salesEU, color = 'orange', label = "Prodaja u Europi")
-ax.plot(salesRest, color = "blue", label ="Prodaja u ostatku svijeta", linestyle = ":")
-ax.legend(loc = 'upper left')
-plt.grid(linewidth = 0.4)
-plt.show()
+fig.add_trace(go.Scatter(x=salesNA.index, y=salesNA.values, mode='lines', name="Sales in North America", line=dict(color='green')))
+fig.add_trace(go.Scatter(x=salesJAP.index, y=salesJAP.values, mode='lines', name="Sales in Japan", line=dict(color='red')))
+fig.add_trace(go.Scatter(x=salesEU.index, y=salesEU.values, mode='lines', name="Sales in Europe", line=dict(color='orange')))
+fig.add_trace(go.Scatter(x=salesRest.index, y=salesRest.values, mode='lines', name="Sales in rest of the world", line=dict(color='blue', dash='dot')))
+
+fig.update_xaxes(title="Year")
+fig.update_yaxes(title="Sales")
+fig.update_layout(legend=dict(x=0, y=1), xaxis=dict(showgrid=True, gridwidth=0.4), yaxis=dict(showgrid=True, gridwidth=0.4))
+fig.update_layout(title="Sales Comparison")
+fig.show()
 
 """Until 1995 it was almost negligible, after 2005 it was even higher than in Japan"""
